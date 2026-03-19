@@ -118,7 +118,7 @@ export const columns: ColumnDef<ResponseType>[] = [
       return (
         <Badge
           variant={amount < 0 ? "destructive" : "primary"}
-          className="text-sm font-medium px-3.5 py-1.5"
+          className="text-sm font-medium px-3.5 py-1.5 whitespace-nowrap"
         >
           {formatCurrency(amount)}
         </Badge>

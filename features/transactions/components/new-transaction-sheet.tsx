@@ -31,7 +31,7 @@ export const NewTransactionSheet = () => {
 
   const categoryQuery = useGetCategories()
   const categoryMutation = useCreateCategory()
-  const onCreateCategory = (name: string) => categoryMutation.mutate({
+  const onCreateCategory = (name: string) => categoryMutation.mutateAsync({
     name
   })
 
@@ -42,7 +42,7 @@ export const NewTransactionSheet = () => {
 
   const accountQuery = useGetAccouts()
   const accountMutation = useCreateAccount()
-  const onCreateAccount = (name: string) => accountMutation.mutate({
+  const onCreateAccount = (name: string) => accountMutation.mutateAsync({
     name
   })
 
@@ -93,6 +93,14 @@ export const NewTransactionSheet = () => {
               onCreateCategory={onCreateCategory}
               accountOptions={accountOptions}
               onCreateAccount={onCreateAccount}
+              defalutValues={{
+                accountId: "",
+                categoryId: "",
+                amount: "",
+                date: new Date(),
+                payee: "",
+                notes: "",
+              }}
             />
           )
         }

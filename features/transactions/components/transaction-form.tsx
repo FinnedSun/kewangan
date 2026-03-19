@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form"
 import { AmountInput } from "@/components/amount-input"
 import { convertAmountToMiliunits } from "@/lib/utils"
+import { ReceiptScanner } from "./receipt-scanner"
 
 const formSchema = z.object({
   date: z.coerce.date(),
@@ -44,11 +45,9 @@ type Props = {
   disabled?: boolean
   accountOptions: { label: string, value: string }[]
   categoryOptions: { label: string, value: string }[]
-  onCreateAccount: (name: string) => void
-  onCreateCategory: (name: string) => void
+  onCreateAccount: (name: string) => void | Promise<any>
+  onCreateCategory: (name: string) => void | Promise<any>
 }
-
-
 
 export const TransactionForm = ({
   id,
@@ -81,12 +80,49 @@ export const TransactionForm = ({
     onDelete?.()
   }
 
+  const handleScanSuccess = async (data: { amount: string; date: string; payee: string; notes: string; category?: string; account?: string }) => {
+    if (data.amount) form.setValue("amount", data.amount);
+    if (data.date) {
+      const d = new Date(data.date);
+      if (!isNaN(d.getTime())) {
+        form.setValue("date", d);
+      }
+    }
+    if (data.payee) form.setValue("payee", data.payee);
+    if (data.notes) form.setValue("notes", data.notes);
+
+    if (data.category) {
+      const existingCategory = categoryOptions.find((c) => c.label.toLowerCase() === data.category!.toLowerCase());
+      if (existingCategory) {
+        form.setValue("categoryId", existingCategory.value);
+      } else {
+        const res = await onCreateCategory(data.category);
+        if (res && res.data && res.data.id) {
+          form.setValue("categoryId", res.data.id);
+        }
+      }
+    }
+
+    if (data.account) {
+      const existingAccount = accountOptions.find((a) => a.label.toLowerCase() === data.account!.toLowerCase());
+      if (existingAccount) {
+        form.setValue("accountId", existingAccount.value);
+      } else {
+        const res = await onCreateAccount(data.account);
+        if (res && res.data && res.data.id) {
+          form.setValue("accountId", res.data.id);
+        }
+      }
+    }
+  }
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4 pt-4"
       >
+        <ReceiptScanner onScanSuccess={handleScanSuccess} disabled={disabled} />
         <FormField
           name="date"
           control={form.control}
@@ -99,6 +135,7 @@ export const TransactionForm = ({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -120,6 +157,7 @@ export const TransactionForm = ({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -141,6 +179,7 @@ export const TransactionForm = ({
                   disabled={disabled}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -159,6 +198,7 @@ export const TransactionForm = ({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -177,6 +217,7 @@ export const TransactionForm = ({
                   placeholder="0.00"
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -196,6 +237,7 @@ export const TransactionForm = ({
                   placeholder="Catatan opsional"
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

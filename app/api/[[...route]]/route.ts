@@ -10,6 +10,7 @@ import summary from "./summary";
 import accounts from './accounts';
 import categories from './categories';
 import transactions from './transactions';
+import scanReceipt from './scan-receipt';
 
 
 /**
@@ -34,6 +35,7 @@ const routes = app
   .route("/accounts", accounts)
   .route("/categories", categories)
   .route("/transactions", transactions)
+  .route("/scan-receipt", scanReceipt)
 
 /**
  * Export HTTP method handlers untuk Vercel

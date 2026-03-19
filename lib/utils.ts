@@ -19,7 +19,7 @@ export function formatCurrency(value: number) {
   return Intl.NumberFormat('id', {
     style: 'currency',
     currency: "IDR",
-    minimumFractionDigits: 3,
+    minimumFractionDigits: 0,
   }).format(value)
 }
 

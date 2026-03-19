@@ -83,7 +83,7 @@ export const DataCard = ({
         </div>
       </CardHeader>
       <CardContent>
-        <h1 className="font-bold text-2xl mb-2 line-clamp-1 break-all">
+        <h1 className="font-bold text-2xl mb-2 truncate">
           <CountUp
             preserveValue
             start={0}

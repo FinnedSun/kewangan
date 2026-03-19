@@ -41,7 +41,7 @@ export const EditTransactionSheet = () => {
 
   const categoryQuery = useGetCategories()
   const categoryMutation = useCreateCategory()
-  const onCreateCategory = (name: string) => categoryMutation.mutate({
+  const onCreateCategory = (name: string) => categoryMutation.mutateAsync({
     name
   })
 
@@ -52,7 +52,7 @@ export const EditTransactionSheet = () => {
 
   const accountQuery = useGetAccouts()
   const accountMutation = useCreateAccount()
-  const onCreateAccount = (name: string) => accountMutation.mutate({
+  const onCreateAccount = (name: string) => accountMutation.mutateAsync({
     name
   })
 
