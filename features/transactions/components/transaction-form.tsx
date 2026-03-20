@@ -3,6 +3,8 @@ import { Trash } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
+import { Checkbox } from "@/components/ui/checkbox"
+
 import { DatePicker } from "@/components/date-picker"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -28,6 +30,8 @@ const formSchema = z.object({
   payee: z.string(),
   amount: z.string(),
   notes: z.string().nullable().optional(),
+  saveAsTemplate: z.boolean().optional(),
+  templateName: z.string().optional(),
 })
 
 const apiSchema = insertTransactionSchema.omit({
@@ -47,6 +51,8 @@ type Props = {
   categoryOptions: { label: string, value: string }[]
   onCreateAccount: (name: string) => void | Promise<any>
   onCreateCategory: (name: string) => void | Promise<any>
+  templates?: { id: string; name: string; payee: string; amount: number | null; accountId: string | null; categoryId: string | null; notes: string | null }[]
+  onCreateTemplate?: (name: string, data: ApiFormValues) => void
 }
 
 export const TransactionForm = ({
@@ -58,7 +64,9 @@ export const TransactionForm = ({
   accountOptions,
   categoryOptions,
   onCreateAccount,
-  onCreateCategory
+  onCreateCategory,
+  templates = [],
+  onCreateTemplate,
 }: Props) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -69,11 +77,32 @@ export const TransactionForm = ({
     const amount = parseFloat(values.amount)
     const amountInMiliunits = convertAmountToMiliunits(amount)
 
-
-    onSubmit({
-      ...values,
+    const transactionData = {
+      date: values.date,
+      accountId: values.accountId,
+      categoryId: values.categoryId,
+      payee: values.payee,
       amount: amountInMiliunits,
-    })
+      notes: values.notes,
+    }
+
+    if (values.saveAsTemplate && values.templateName) {
+      onCreateTemplate?.(values.templateName, transactionData)
+    }
+
+    onSubmit(transactionData)
+  }
+
+  const handleTemplateSelect = (templateId?: string) => {
+    if (!templateId) return;
+    const t = templates.find((x) => x.id === templateId)
+    if (t) {
+      if (t.payee) form.setValue("payee", t.payee)
+      if (t.amount) form.setValue("amount", t.amount.toString())
+      if (t.categoryId) form.setValue("categoryId", t.categoryId)
+      if (t.accountId) form.setValue("accountId", t.accountId)
+      if (t.notes) form.setValue("notes", t.notes)
+    }
   }
 
   const handleDelete = () => {
@@ -122,6 +151,20 @@ export const TransactionForm = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4 pt-4"
       >
+        {templates.length > 0 && (
+          <FormItem>
+            <FormLabel>Gunakan Template</FormLabel>
+            <FormControl>
+              <Select
+                placeholder="Pilih template..."
+                options={templates.map((t) => ({ label: t.name, value: t.id }))}
+                onChange={handleTemplateSelect}
+                value=""
+                disabled={disabled}
+              />
+            </FormControl>
+          </FormItem>
+        )}
         <ReceiptScanner onScanSuccess={handleScanSuccess} disabled={disabled} />
         <FormField
           name="date"
@@ -241,6 +284,47 @@ export const TransactionForm = ({
             </FormItem>
           )}
         />
+        {!id && onCreateTemplate && (
+          <div className="space-y-4 border p-4 rounded-md mt-4">
+            <FormField
+              name="saveAsTemplate"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={disabled}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none ml-3">
+                    <FormLabel>Simpan sebagai template</FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+            {form.watch("saveAsTemplate") && (
+              <FormField
+                name="templateName"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Template</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={disabled}
+                        placeholder="Misal: Bensin, Belanja Bulanan..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        )}
         <Button className="w-full" disabled={disabled}>
           {id ? "Simpan" : "Buat transaksi"}
         </Button>

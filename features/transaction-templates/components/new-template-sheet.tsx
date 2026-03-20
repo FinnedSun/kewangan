@@ -1,9 +1,10 @@
 import { z } from "zod"
 
-import { useNewTransaction } from "@/features/transactions/hooks/use-new-transaction"
-import { useCreateTransaction } from "@/features/transactions/api/use-create-transaction"
+import { TemplateForm } from "@/features/transaction-templates/components/template-form"
+import { useNewTransactionTemplate } from "@/features/transaction-templates/hooks/use-new-transaction-template"
+import { useCreateTransactionTemplate } from "@/features/transaction-templates/api/use-create-transaction-template"
 
-import { insertTransactionSchema } from "@/db/schema"
+import { insertTransactionTemplateSchema } from "@/db/schema"
 import {
   Sheet,
   SheetContent,
@@ -15,27 +16,23 @@ import { useCreateCategory } from "@/features/categories/api/use-create-category
 import { useGetCategories } from "@/features/categories/api/use-get-categories"
 import { useGetAccouts } from "@/features/accounts/api/use-get-accounts"
 import { useCreateAccount } from "@/features/accounts/api/use-create-account"
-import { useGetTransactionTemplates } from "@/features/transaction-templates/api/use-get-transaction-templates"
-import { useCreateTransactionTemplate } from "@/features/transaction-templates/api/use-create-transaction-template"
-import { TransactionForm } from "@/features/transactions/components/transaction-form"
 import { Loader2 } from "lucide-react"
 
-const formSchema = insertTransactionSchema.omit({
+const formSchema = insertTransactionTemplateSchema.omit({
   id: true,
+  userId: true,
 })
 
 type FormValues = z.input<typeof formSchema>
 
-export const NewTransactionSheet = () => {
-  const { isOpen, onClose } = useNewTransaction()
+export const NewTemplateSheet = () => {
+  const { isOpen, onClose } = useNewTransactionTemplate()
 
-  const createMutation = useCreateTransaction()
+  const createMutation = useCreateTransactionTemplate()
 
   const categoryQuery = useGetCategories()
   const categoryMutation = useCreateCategory()
-  const onCreateCategory = (name: string) => categoryMutation.mutateAsync({
-    name
-  })
+  const onCreateCategory = (name: string) => categoryMutation.mutateAsync({ name })
 
   const categoryOptions = (categoryQuery.data ?? []).map((category) => ({
     label: category.name,
@@ -44,35 +41,21 @@ export const NewTransactionSheet = () => {
 
   const accountQuery = useGetAccouts()
   const accountMutation = useCreateAccount()
-  const onCreateAccount = (name: string) => accountMutation.mutateAsync({
-    name
-  })
+  const onCreateAccount = (name: string) => accountMutation.mutateAsync({ name })
 
   const accountOptions = (accountQuery.data ?? []).map((account) => ({
     label: account.name,
     value: account.id
   }))
 
-  const templateQuery = useGetTransactionTemplates()
-  const templateMutation = useCreateTransactionTemplate()
-
-  const onCreateTemplate = (name: string, data: any) => templateMutation.mutate({
-    name,
-    ...data
-  })
-
-  const templates = templateQuery.data || []
-
   const isPending =
     createMutation.isPending ||
     categoryMutation.isPending ||
-    accountMutation.isPending ||
-    templateMutation.isPending
+    accountMutation.isPending
 
   const isLoading =
     categoryQuery.isLoading ||
-    accountQuery.isLoading ||
-    templateQuery.isLoading
+    accountQuery.isLoading
 
   const onSubmit = (values: FormValues) => {
     createMutation.mutate(values, {
@@ -87,10 +70,10 @@ export const NewTransactionSheet = () => {
       <SheetContent className="space-y-4">
         <SheetHeader>
           <SheetTitle>
-            Transaksi baru
+            Template baru
           </SheetTitle>
           <SheetDescription>
-            Buat transaksi baru.
+            Buat template transaksi baru untuk mempermudah pencatatan.
           </SheetDescription>
         </SheetHeader>
         {isLoading
@@ -100,27 +83,24 @@ export const NewTransactionSheet = () => {
             </div>
           )
           : (
-              <TransactionForm
-                onSubmit={onSubmit}
-                disabled={isPending}
-                categoryOptions={categoryOptions}
-                onCreateCategory={onCreateCategory}
-                accountOptions={accountOptions}
-                onCreateAccount={onCreateAccount}
-                templates={templates}
-                onCreateTemplate={onCreateTemplate}
-                defalutValues={{
+            <TemplateForm
+              onSubmit={onSubmit}
+              disabled={isPending}
+              categoryOptions={categoryOptions}
+              onCreateCategory={onCreateCategory}
+              accountOptions={accountOptions}
+              onCreateAccount={onCreateAccount}
+              defaultValues={{
+                name: "",
                 accountId: "",
                 categoryId: "",
                 amount: "",
-                date: new Date(),
                 payee: "",
                 notes: "",
               }}
             />
           )
         }
-
       </SheetContent>
     </Sheet>
   )

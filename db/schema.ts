@@ -17,7 +17,8 @@ export const accounts = pgTable("accounts", {
 })
 
 export const accountsRelations = relations(accounts, ({ many }) => ({
-    transactions: many(transactions)
+    transactions: many(transactions),
+    transactionTemplates: many(transactionTemplates),
 }))
 
 export const insertAccountSchema = createInsertSchema(accounts)
@@ -30,7 +31,8 @@ export const categories = pgTable("categories", {
 })
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
-    transactions: many(transactions)
+    transactions: many(transactions),
+    transactionTemplates: many(transactionTemplates),
 }))
 
 export const insertCategoriesSchema = createInsertSchema(categories)
@@ -64,3 +66,31 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 export const insertTransactionSchema = createInsertSchema(transactions, {
     date: z.coerce.date(),
 })
+
+export const transactionTemplates = pgTable("transaction_templates", {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    userId: text("user_id").notNull(),
+    amount: bigint("amount", { mode: "number" }),
+    payee: text("payee").notNull(),
+    notes: text("notes"),
+    accountId: text("account_id").references(() => accounts.id, {
+        onDelete: "set null"
+    }),
+    categoryId: text("category_id").references(() => categories.id, {
+        onDelete: "set null"
+    }),
+})
+
+export const transactionTemplatesRelations = relations(transactionTemplates, ({ one }) => ({
+    accounts: one(accounts, {
+        fields: [transactionTemplates.accountId],
+        references: [accounts.id],
+    }),
+    categories: one(categories, {
+        fields: [transactionTemplates.categoryId],
+        references: [categories.id],
+    })
+}))
+
+export const insertTransactionTemplateSchema = createInsertSchema(transactionTemplates)

@@ -11,6 +11,7 @@ import accounts from './accounts';
 import categories from './categories';
 import transactions from './transactions';
 import scanReceipt from './scan-receipt';
+import transactionTemplates from './transaction-templates';
 
 
 /**
@@ -35,6 +36,7 @@ const routes = app
   .route("/accounts", accounts)
   .route("/categories", categories)
   .route("/transactions", transactions)
+  .route("/transaction-templates", transactionTemplates)
   .route("/scan-receipt", scanReceipt)
 
 /**

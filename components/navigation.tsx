@@ -27,6 +27,10 @@ const routes = [
     label: "Categories"
   },
   {
+    href: "/transaction-templates",
+    label: "Templates"
+  },
+  {
     href: "/settings",
     label: "Settings"
   },

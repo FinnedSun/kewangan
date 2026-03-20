@@ -36,7 +36,7 @@ export const BarVariant = ({ data }: Props) => {
         <Tooltip content={<CostomTooltip />} />
         <Bar
           dataKey={"income"}
-          fill="#3d82bf"
+          fill="#17CF97"
           className="drop-shadow-sm"
         />
         <Bar
