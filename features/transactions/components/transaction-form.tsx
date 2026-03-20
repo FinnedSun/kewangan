@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { z } from "zod"
 import { Trash } from "lucide-react"
 import { useForm } from "react-hook-form"
@@ -68,6 +69,9 @@ export const TransactionForm = ({
   templates = [],
   onCreateTemplate,
 }: Props) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const isFormDisabled = disabled || isScanning;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defalutValues
@@ -160,12 +164,12 @@ export const TransactionForm = ({
                 options={templates.map((t) => ({ label: t.name, value: t.id }))}
                 onChange={handleTemplateSelect}
                 value=""
-                disabled={disabled}
+                disabled={isFormDisabled}
               />
             </FormControl>
           </FormItem>
         )}
-        <ReceiptScanner onScanSuccess={handleScanSuccess} disabled={disabled} />
+        <ReceiptScanner onScanSuccess={handleScanSuccess} onScanStateChange={setIsScanning} disabled={isFormDisabled} />
         <FormField
           name="date"
           control={form.control}
@@ -175,7 +179,7 @@ export const TransactionForm = ({
                 <DatePicker
                   value={field.value}
                   onChange={field.onChange}
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                 />
               </FormControl>
               <FormMessage />
@@ -197,7 +201,7 @@ export const TransactionForm = ({
                   onCreate={onCreateAccount}
                   value={field.value}
                   onChange={field.onChange}
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                 />
               </FormControl>
               <FormMessage />
@@ -219,7 +223,7 @@ export const TransactionForm = ({
                   onCreate={onCreateCategory}
                   value={field.value}
                   onChange={field.onChange}
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                 />
               </FormControl>
               <FormMessage />
@@ -236,7 +240,7 @@ export const TransactionForm = ({
               </FormLabel>
               <FormControl>
                 <Input
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                   placeholder="Tambahkan pembayaran"
                   {...field}
                 />
@@ -256,7 +260,7 @@ export const TransactionForm = ({
               <FormControl>
                 <AmountInput
                   {...field}
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                   placeholder="0.00"
                 />
               </FormControl>
@@ -276,7 +280,7 @@ export const TransactionForm = ({
                 <Textarea
                   {...field}
                   value={field.value ?? ""}
-                  disabled={disabled}
+                  disabled={isFormDisabled}
                   placeholder="Catatan opsional"
                 />
               </FormControl>
@@ -295,7 +299,7 @@ export const TransactionForm = ({
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      disabled={disabled}
+                      disabled={isFormDisabled}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none ml-3">
@@ -314,7 +318,7 @@ export const TransactionForm = ({
                     <FormControl>
                       <Input
                         {...field}
-                        disabled={disabled}
+                        disabled={isFormDisabled}
                         placeholder="Misal: Bensin, Belanja Bulanan..."
                       />
                     </FormControl>
@@ -325,13 +329,13 @@ export const TransactionForm = ({
             )}
           </div>
         )}
-        <Button className="w-full" disabled={disabled}>
+        <Button className="w-full" disabled={isFormDisabled}>
           {id ? "Simpan" : "Buat transaksi"}
         </Button>
         {!!id && (
           <Button
             type="button"
-            disabled={disabled}
+            disabled={isFormDisabled}
             onClick={handleDelete}
             className="w-full"
             variant={"outline"}

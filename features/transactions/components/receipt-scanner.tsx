@@ -1,18 +1,23 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Camera, Image as ImageIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useScanReceipt } from "@/features/transactions/api/use-scan-receipt";
 
 type Props = {
-  onScanSuccess: (data: { amount: string; date: string; payee: string; notes: string }) => void;
+  onScanSuccess: (data: { amount: string; date: string; payee: string; notes: string; category?: string; account?: string }) => void;
+  onScanStateChange?: (isScanning: boolean) => void;
   disabled?: boolean;
 };
 
-export const ReceiptScanner = ({ onScanSuccess, disabled }: Props) => {
+export const ReceiptScanner = ({ onScanSuccess, onScanStateChange, disabled }: Props) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scanMutation = useScanReceipt();
+
+  useEffect(() => {
+    onScanStateChange?.(scanMutation.isPending);
+  }, [scanMutation.isPending, onScanStateChange]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
